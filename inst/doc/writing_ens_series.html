@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Jean-Michel Perraud" />
+
+<meta name="date" content="2018-04-26" />
+
+<title>Writing ensemble series with the efts R package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Writing ensemble series with the ‘efts’ R package</h1>
+<h4 class="author"><em>Jean-Michel Perraud</em></h4>
+<h4 class="date"><em>2018-04-26</em></h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><strong>efts</strong> is an R package to access ensemble forecast time series stored (EFTS) in netCDF format. It offers convenient functions to access time series, hiding the bug-prone details of netCDF array manipulations.</p>
+<p>EFTS netCDF data sets follow the schema described at <a href="https://github.com/jmp75/efts/blob/master/docs/netcdf_for_water_forecasting.md">this location</a> at the time of writing.</p>
+<p>The package comes with API documentation, as well as the present vignette. You can access both navigating via</p>
+<pre><code>?efts</code></pre>
+</div>
+<div id="creating-efts-netcdf-files" class="section level2">
+<h2>Creating EFTS netCDF files</h2>
+<p>Perhaps as an unusual introduction, we will learn to write a EFTS netCDF data set prior to reading it.</p>
+<p>Typical EFTS data is multidimensional, and the netCDF schema reflects this. To create a new data set, you need to define these dimensions. To create the information about the main time axis, you can use the <code>create_time_info</code> helper function in the package. The following command creates an hourly data set over two days</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(efts)
+timeAxisStart &lt;-<span class="st"> </span><span class="kw">ISOdate</span>(<span class="dt">year=</span><span class="dv">2010</span>, <span class="dt">month=</span><span class="dv">08</span>, <span class="dt">day=</span><span class="dv">01</span>, <span class="dt">hour =</span> <span class="dv">12</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">sec =</span> <span class="dv">0</span>, <span class="dt">tz =</span> <span class="st">&quot;UTC&quot;</span>)
+timeDimInfo &lt;-<span class="st"> </span><span class="kw">create_time_info</span>(<span class="dt">from=</span>timeAxisStart, <span class="dt">n=</span><span class="dv">48</span>, <span class="dt">time_step=</span><span class="st">'hours since'</span>, <span class="dt">time_step_delta=</span>1L)
+<span class="kw">str</span>(timeDimInfo)</code></pre></div>
+<pre><code>#&gt; List of 2
+#&gt;  $ units : chr &quot;hours since 2010-08-01 12:00:00 +0000&quot;
+#&gt;  $ values: int [1:48] 0 1 2 3 4 5 6 7 8 9 ...</code></pre>
+<p>Other dimensions are easier to create. Variables are more involved; one way to define several variables is via a data frame. For instance, you can start from a stub such as created by the following:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">variable_names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">'rain_sim'</span>,<span class="st">'pet_sim'</span>)
+varDef &lt;-<span class="st"> </span><span class="kw">create_variable_definition_dataframe</span>(<span class="dt">variable_names=</span>variable_names, <span class="dt">long_names =</span> <span class="kw">rep</span>(<span class="st">'synthetic data'</span>, <span class="dv">2</span>), <span class="dt">dimensions=</span>4L)
+<span class="kw">str</span>(varDef)</code></pre></div>
+<pre><code>#&gt; 'data.frame':    2 obs. of  12 variables:
+#&gt;  $ name                : chr  &quot;rain_sim&quot; &quot;pet_sim&quot;
+#&gt;  $ longname            : chr  &quot;synthetic data&quot; &quot;synthetic data&quot;
+#&gt;  $ standard_name       : chr  &quot;rain_sim&quot; &quot;pet_sim&quot;
+#&gt;  $ units               : chr  &quot;mm&quot; &quot;mm&quot;
+#&gt;  $ missval             : num  -9999 -9999
+#&gt;  $ precision           : chr  &quot;double&quot; &quot;double&quot;
+#&gt;  $ dimensions          : int  4 4
+#&gt;  $ type                : int  2 2
+#&gt;  $ type_description    : chr  &quot;accumulated over the preceding interval&quot; &quot;accumulated over the preceding interval&quot;
+#&gt;  $ dat_type            : chr  &quot;der&quot; &quot;der&quot;
+#&gt;  $ dat_type_description: chr  &quot;AWAP data interpolated from observations&quot; &quot;AWAP data interpolated from observations&quot;
+#&gt;  $ location_type       : chr  &quot;Point&quot; &quot;Point&quot;</code></pre>
+<p>Do note the column names of the data frame <code>varDef</code>; the package is picky about these, to comply with the EFTS netCDF data schema.</p>
+<p>Let’s create a data set with 2 point stations, 3 ensembles and four time step forecast lead.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stationIds &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">123</span>,<span class="dv">456</span>)
+nEns &lt;-<span class="st"> </span><span class="dv">3</span>
+nLead &lt;-<span class="st"> </span><span class="dv">4</span>
+fname &lt;-<span class="st"> </span><span class="kw">tempfile</span>() <span class="co"># or something you prefer.</span></code></pre></div>
+<p>It is mandatory to provide some global file attributes, the function <code>create_global_attributes</code> provides a starting point.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">global_attr &lt;-<span class="st"> </span><span class="kw">create_global_attributes</span>(
+  <span class="dt">title=</span><span class="st">&quot;data set title&quot;</span>, 
+  <span class="dt">institution=</span><span class="st">&quot;my org&quot;</span>, 
+  <span class="dt">catchment=</span><span class="st">&quot;My_Catchment&quot;</span>, 
+  <span class="dt">source=</span><span class="st">&quot;A journal reference, URL&quot;</span>, 
+  <span class="dt">comment=</span><span class="st">&quot;example for vignette&quot;</span>)</code></pre></div>
+<p>Similarly for optional geographic metadata variables:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(opt_metadatavars &lt;-<span class="st"> </span><span class="kw">default_optional_variable_definitions_v2_0</span>())</code></pre></div>
+<pre><code>#&gt;                name                                     longname
+#&gt; x                 x  easting from the GDA94 datum in MGA Zone 55
+#&gt; y                 y northing from the GDA94 datum in MGA Zone 55
+#&gt; area           area                               catchment area
+#&gt; elevation elevation            station elevation above sea level
+#&gt;                   standard_name units missval precision
+#&gt; x         northing_GDA94_zone55            NA     float
+#&gt; y          easting_GDA94_zone55            NA     float
+#&gt; area                       area  km^2   -9999     float
+#&gt; elevation             elevation     m   -9999     float</code></pre>
+<p>Similarly for optional geographic metadata variables:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">snc &lt;-<span class="st"> </span><span class="kw">create_efts</span>(
+  <span class="dt">fname=</span>fname,
+  <span class="dt">data_var_definitions=</span>varDef,
+  <span class="dt">optional_vars=</span>opt_metadatavars,
+  <span class="dt">time_dim_info=</span>timeDimInfo,
+  <span class="dt">stations_ids=</span>stationIds,
+  <span class="dt">station_names=</span><span class="ot">NULL</span>,
+  <span class="dt">nc_attributes=</span>global_attr,
+  <span class="dt">lead_length=</span>nLead,
+  <span class="dt">ensemble_length=</span>nEns)</code></pre></div>
+<p>The default <code>print</code> method for this object snc is the same output as objects of class <code>ncdf4</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">snc</code></pre></div>
+<pre><code>#&gt; File /tmp/RtmpKDVAG9/file1e206b54f8d7 (NC_FORMAT_CLASSIC):
+#&gt; 
+#&gt;      10 variables (excluding dimension variables):
+#&gt;         double rain_sim[lead_time,station,ens_member,time]   
+#&gt;             units: mm
+#&gt;             _FillValue: -9999
+#&gt;             long_name: synthetic data
+#&gt;             standard_name: rain_sim
+#&gt;             type: 2
+#&gt;             type_description: accumulated over the preceding interval
+#&gt;             dat_type: der
+#&gt;             dat_type_description: AWAP data interpolated from observations
+#&gt;             location_type: Point
+#&gt;         double pet_sim[lead_time,station,ens_member,time]   
+#&gt;             units: mm
+#&gt;             _FillValue: -9999
+#&gt;             long_name: synthetic data
+#&gt;             standard_name: pet_sim
+#&gt;             type: 2
+#&gt;             type_description: accumulated over the preceding interval
+#&gt;             dat_type: der
+#&gt;             dat_type_description: AWAP data interpolated from observations
+#&gt;             location_type: Point
+#&gt;         int station_id[station]   
+#&gt;             long_name: station or node identification code
+#&gt;         char station_name[str_len,station]   
+#&gt;             long_name: station or node name
+#&gt;         float lat[station]   
+#&gt;             units: degrees north
+#&gt;             _FillValue: -9999
+#&gt;             long_name: latitude
+#&gt;             axis: y
+#&gt;         float lon[station]   
+#&gt;             units: degrees east
+#&gt;             _FillValue: -9999
+#&gt;             long_name: longitude
+#&gt;             axis: x
+#&gt;         float x[station]   
+#&gt;             _FillValue: NaN
+#&gt;             long_name: easting from the GDA94 datum in MGA Zone 55
+#&gt;             standard_name: northing_GDA94_zone55
+#&gt;             axis: x
+#&gt;         float y[station]   
+#&gt;             _FillValue: NaN
+#&gt;             long_name: northing from the GDA94 datum in MGA Zone 55
+#&gt;             standard_name: easting_GDA94_zone55
+#&gt;             axis: y
+#&gt;         float area[station]   
+#&gt;             units: km^2
+#&gt;             _FillValue: -9999
+#&gt;             long_name: catchment area
+#&gt;             standard_name: area
+#&gt;         float elevation[station]   
+#&gt;             units: m
+#&gt;             _FillValue: -9999
+#&gt;             long_name: station elevation above sea level
+#&gt;             standard_name: elevation
+#&gt; 
+#&gt;      5 dimensions:
+#&gt;         lead_time  Size:4
+#&gt;             units: hours since time
+#&gt;             long_name: forecast lead time
+#&gt;             standard_name: lead_time
+#&gt;             axis: v
+#&gt;         station  Size:2
+#&gt;         ens_member  Size:3
+#&gt;             units: member id
+#&gt;             long_name: ensemble member
+#&gt;             standard_name: ens_member
+#&gt;             axis: u
+#&gt;         time  Size:48   *** is unlimited ***
+#&gt;             units: hours since 2010-08-01 12:00:00 +0000
+#&gt;             long_name: time
+#&gt;             standard_name: time
+#&gt;             time_standard: UTC
+#&gt;             axis: t
+#&gt;         str_len  Size:30
+#&gt;             long_name: string length
+#&gt; 
+#&gt;     8 global attributes:
+#&gt;         STF_convention_version: 2
+#&gt;         STF_nc_spec: https://github.com/jmp75/efts/blob/107c553045a37e6ef36b2eababf6a299e7883d50/docs/netcdf_for_water_forecasting.md
+#&gt;         history: : 2018-04-26 01:13:59 UTC file created with the R package efts 0.9-0
+#&gt;         title: data set title
+#&gt;         institution: my org
+#&gt;         source: A journal reference, URL
+#&gt;         catchment: My_Catchment
+#&gt;         comment: example for vignette</code></pre>
+<p><code>snc</code> is a type of object that few R aficionados are aware of; this is a reference class. Without entering into unnecessary technical details, this is mostly a design choice done to achieve better memory usage and performance in some contexts.</p>
+<p>The following command displays the main characteristics of this reference object, of class <code>EftsDataSet</code> Note that you should really use the methods, and not access directly the fields.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(snc, <span class="dt">max.level=</span><span class="dv">2</span>)</code></pre></div>
+<pre><code>#&gt; Reference class 'EftsDataSet' [package &quot;efts&quot;] with 8 fields
+#&gt;  $ ncfile                  :List of 14
+#&gt;   ..- attr(*, &quot;class&quot;)= chr &quot;ncdf4&quot;
+#&gt;  $ time_dim                : POSIXct[1:1], format: NA
+#&gt;  $ time_zone               : chr &quot;UTC&quot;
+#&gt;  $ identifiers_dimensions  : list()
+#&gt;  $ stations_varname        : chr &quot;station_id&quot;
+#&gt;  $ stations_dim_name       : chr &quot;station&quot;
+#&gt;  $ lead_time_dim_name      : chr &quot;lead_time&quot;
+#&gt;  $ ensemble_member_dim_name: chr &quot;ens_member&quot;
+#&gt;  and 46 methods, of which 32 are  possibly relevant:
+#&gt;    close, get_all_series, get_dim_names, get_ensemble_for_stations,
+#&gt;    get_ensemble_forecasts, get_ensemble_forecasts_for_station,
+#&gt;    get_ensemble_series, get_ensemble_size, get_lead_time_count,
+#&gt;    get_single_series, get_station_count, get_stations_varname,
+#&gt;    get_time_dim, get_time_unit, get_time_zone, get_utc_offset, get_values,
+#&gt;    get_variable_dim_names, get_variable_names, index_for_identifier,
+#&gt;    index_for_time, initialize, initialize#NetCdfDataSet,
+#&gt;    put_ensemble_forecasts, put_ensemble_forecasts_for_station,
+#&gt;    put_ensemble_series, put_single_series, put_values, set_time_zone,
+#&gt;    show#envRefClass, summary, sync</code></pre>
+<p>You can get to the documentation page for the methods in this class with:</p>
+<pre><code>?efts::EftsDataSet</code></pre>
+<p>Our EFTS data set object is ready to be populated with data. Let’s create synthetic data. The basic idea of the object’s methods is to offer intuitive and concise means to get/set ensemble of forecast time series. A method can be called in a syntax that may be unfamiliar to most R users, but similar to most object oriented languages: <code>theObject$theMethodName(someArgumentsIfAny)</code>, for instance <code>snc$get_time_dim()</code> in our EFTS data set, to retrieve its time axis.</p>
+<p>TODO: test, document and demonstrate missing value handling.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">42</span>)
+td &lt;-<span class="st"> </span>snc<span class="op">$</span><span class="kw">get_time_dim</span>()
+<span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(td)) {
+    <span class="cf">for</span> (station <span class="cf">in</span> stationIds) {
+        rain &lt;-<span class="st"> </span><span class="dv">6</span> <span class="op">*</span><span class="st"> </span><span class="kw">rnorm</span>(nEns<span class="op">*</span>nLead)
+        rain &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">pmax</span>(<span class="kw">as.numeric</span>(rain), <span class="dv">0</span>), <span class="dt">nrow=</span>nLead) <span class="co"># nEns replicates of a forecast of length nLead</span>
+        pet &lt;-<span class="st"> </span><span class="fl">6.0</span> <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(nEns<span class="op">*</span>nLead)
+        pet &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">pmax</span>(<span class="kw">as.numeric</span>(pet), <span class="dv">0</span>), <span class="dt">nrow=</span>nLead)
+        dtime =<span class="st"> </span>td[i]
+        snc<span class="op">$</span><span class="kw">put_ensemble_forecasts</span>(rain, <span class="dt">variable_name =</span> variable_names[<span class="dv">1</span>], <span class="dt">identifier =</span> station, <span class="dt">start_time =</span> dtime) 
+        snc<span class="op">$</span><span class="kw">put_ensemble_forecasts</span>(pet,  <span class="dt">variable_name =</span> variable_names[<span class="dv">2</span>], <span class="dt">identifier =</span> station, <span class="dt">start_time =</span> dtime) 
+    }
+}</code></pre></div>
+</div>
+<div id="reading-data" class="section level2">
+<h2>Reading data</h2>
+<p>Now we can demonstrate how to retrieve data. If you had closed the previous EFTS data set object <code>snc</code> and deleted the variable, you’d reopen it for reading with the following command:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">if</span> (<span class="op">!</span><span class="kw">exists</span>(<span class="st">'snc'</span>)) snc &lt;-<span class="st"> </span><span class="kw">open_efts</span>(fname)</code></pre></div>
+<p>You get the ensemble forecast for a variable (pet in this case) for a point in time with the following command</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td &lt;-<span class="st"> </span>snc<span class="op">$</span><span class="kw">get_time_dim</span>()
+timeStamp &lt;-<span class="st"> </span>td[<span class="dv">5</span>] <span class="co"># for instance</span>
+d &lt;-<span class="st"> </span>snc<span class="op">$</span><span class="kw">get_ensemble_forecasts</span>(variable_names[<span class="dv">2</span>], stationIds[<span class="dv">1</span>], <span class="dt">start_time=</span>timeStamp)
+<span class="kw">str</span>(d)</code></pre></div>
+<pre><code>#&gt; An 'xts' object on 2010-08-01 16:00:00/2010-08-01 19:00:00 containing:
+#&gt;   Data: num [1:4, 1:3] 4.62 4.85 5.29 4.95 5.35 ...
+#&gt;   Indexed by objects of class: [POSIXct,POSIXt] TZ: UTC
+#&gt;   xts Attributes:  
+#&gt;  NULL</code></pre>
+<p>The object returned is of class <code>xts</code>. The package <strong>xts</strong> has been chosen as the default time series structure for <strong>efts</strong>. The rationale is empirical: previous experience with the <strong>xts</strong> in conjunction with <strong>plyr</strong> (note to self: possibly <strong>dplyr</strong> in the future) showed good performance to calculate hydrologic statistics on ensemble of time series.</p>
+<p>To quickly visualize it (if the data is not too big), using the function <code>plot.zoo</code> has the advantage of stacking the series:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">zoo<span class="op">::</span><span class="kw">plot.zoo</span>(d)</code></pre></div>
+<p><img src="data:image/png;base64,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" style="display:block; margin: auto" style="display: block; margin: auto;" /></p>
+<p>As of version 0.5-1, there is a convenience function to retrieve the UTC offset of the units of time dimension. Here there is none, hence a duration of zero returned:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste0</span>( <span class="st">&quot;UTC offset as a string: &quot;</span>, snc<span class="op">$</span><span class="kw">get_utc_offset</span>())</code></pre></div>
+<pre><code>#&gt; [1] &quot;UTC offset as a string: +0000&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste0</span>( <span class="st">&quot;UTC offset as a difftime: &quot;</span>, snc<span class="op">$</span><span class="kw">get_utc_offset</span>(<span class="dt">as_string=</span><span class="ot">FALSE</span>))</code></pre></div>
+<pre><code>#&gt; [1] &quot;UTC offset as a difftime: 0&quot;</code></pre>
+<p>Close the data set with the following commands:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">snc<span class="op">$</span><span class="kw">close</span>()
+<span class="kw">rm</span>(snc)</code></pre></div>
+<p>This vignette creates by default a temporary file. This shall be cleaned up by default with:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">if</span>(<span class="kw">file.exists</span>(fname)) <span class="kw">file.remove</span>(fname)</code></pre></div>
+<pre><code>#&gt; [1] TRUE</code></pre>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
